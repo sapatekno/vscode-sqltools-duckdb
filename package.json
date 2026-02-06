@@ -19,7 +19,7 @@
   "keywords": [
     "sqltools-driver",
     "duckdb",
-    "sqltools",
+    "sqltools"
   ],
   "galleryBanner": {
     "theme": "light",
