@@ -1,8 +1,8 @@
 {
   "name": "sqltools-driver-duckdb",
   "displayName": "SQLTools DuckDB (CLI)",
-  "description": "SQLTools DuckDB driver backed by DuckDB CLI",
-  "version": "0.6.0-SNAPSHOT",
+  "description": "SQLTools DuckDB driver",
+  "version": "0.1.0-TEST",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -11,18 +11,15 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/SAPATEKNO/vscode-sqltools.git",
-    "directory": "packages/driver.sqlite"
+    "url": "https://github.com/sapatekno/vscode-sqltools-duckdb"
   },
   "bugs": {
-    "url": "https://github.com/SAPATEKNO/vscode-sqltools/issues"
+    "url": "https://github.com/sapatekno/vscode-sqltools-duckdb/issues"
   },
   "keywords": [
     "sqltools-driver",
     "duckdb",
     "sqltools",
-    "sqlite",
-    "windows"
   ],
   "galleryBanner": {
     "theme": "light",
