@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "database": {
+      "title": "Database file",
+      "description": "Use :memory: for an in-memory DuckDB session.",
+      "type": "string",
+      "minLength": 1
+    },
+    "duckdbCliPath": {
+      "title": "DuckDB CLI executable",
+      "description": "Optional. Use absolute executable path or command name on PATH (e.g. duckdb). You can also set DUCKDB_CLI_PATH.",
+      "type": "string",
+      "minLength": 1
+    },
+    "readOnly": {
+      "title": "Read-only connection",
+      "description": "Open DuckDB with -readonly to block write statements.",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "database"
+  ]
+}

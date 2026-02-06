@@ -1,0 +1,6 @@
+{
+  "ui:order": ["database", "duckdbCliPath", "readOnly"],
+  "database": { "ui:widget": "file" },
+  "duckdbCliPath": { "ui:widget": "text" },
+  "readOnly": { "ui:widget": "checkbox" }
+}
