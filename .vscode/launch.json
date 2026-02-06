@@ -6,7 +6,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Run SQLite Extension",
+			"name": "Run DuckDB Extension",
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
@@ -49,10 +49,10 @@
 	],
 	"compounds": [
 		{
-			"name": "Run SQLite Driver Ext and Attach LS",
+			"name": "Run DuckDB Driver Ext and Attach LS",
 			"configurations": [
 				"Attach SQLTools LS",
-				"Run SQLite Extension"
+				"Run DuckDB Extension"
 			]
 		}
 	]
