@@ -5,8 +5,7 @@ import fs from 'fs';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types';
-import { parse as queryParse } from '@sqltools/util/query';
-import generateId from '@sqltools/util/internal-id';
+import { randomUUID } from 'crypto';
 import keywordsCompletion from './keywords';
 
 const LEGACY_DEFAULT_DUCKDB_CLI_PATH_WINDOWS = 'M:\\Programs\\duckdb\\duckdb.exe';
@@ -34,6 +33,105 @@ const AUTO_EXECUTABLE_CANDIDATES: Record<string, string[]> = {
 const PRIORITIZED_SQL_WORDS = new Set(['SELECT', 'CREATE', 'UPDATE', 'DELETE']);
 
 const execFileAsync = promisify(execFile);
+
+const createResultId = () => {
+  try {
+    return randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+};
+
+const splitSqlStatements = (sqlText: string): string[] => {
+  const statements: string[] = [];
+  let current = '';
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  for (let i = 0; i < sqlText.length; i++) {
+    const ch = sqlText[i];
+    const next = sqlText[i + 1];
+
+    if (inLineComment) {
+      current += ch;
+      if (ch === '\n') inLineComment = false;
+      continue;
+    }
+
+    if (inBlockComment) {
+      current += ch;
+      if (ch === '*' && next === '/') {
+        current += next;
+        i++;
+        inBlockComment = false;
+      }
+      continue;
+    }
+
+    if (inSingleQuote) {
+      current += ch;
+      if (ch === '\'' && next === '\'') {
+        current += next;
+        i++;
+        continue;
+      }
+      if (ch === '\'') inSingleQuote = false;
+      continue;
+    }
+
+    if (inDoubleQuote) {
+      current += ch;
+      if (ch === '"' && next === '"') {
+        current += next;
+        i++;
+        continue;
+      }
+      if (ch === '"') inDoubleQuote = false;
+      continue;
+    }
+
+    if (ch === '-' && next === '-') {
+      current += ch + next;
+      i++;
+      inLineComment = true;
+      continue;
+    }
+
+    if (ch === '/' && next === '*') {
+      current += ch + next;
+      i++;
+      inBlockComment = true;
+      continue;
+    }
+
+    if (ch === '\'') {
+      current += ch;
+      inSingleQuote = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      current += ch;
+      inDoubleQuote = true;
+      continue;
+    }
+
+    if (ch === ';') {
+      const trimmed = current.trim();
+      if (trimmed) statements.push(trimmed);
+      current = '';
+      continue;
+    }
+
+    current += ch;
+  }
+
+  const tail = current.trim();
+  if (tail) statements.push(tail);
+  return statements;
+};
 
 type TDuckDBConnection = {
   databasePath: string;
@@ -237,7 +335,7 @@ export default class DuckDB extends AbstractDriver<TDuckDBConnection, any> imple
 
   public query: (typeof AbstractDriver)['prototype']['query'] = async (query, opt = {}) => {
     const { requestId } = opt;
-    const queries = queryParse(query.toString()).filter(Boolean);
+    const queries = splitSqlStatements(query.toString()).filter(Boolean);
     const resultsAgg: NSDatabase.IResult[] = [];
 
     for (const q of queries) {
@@ -249,7 +347,7 @@ export default class DuckDB extends AbstractDriver<TDuckDBConnection, any> imple
         }
         resultsAgg.push(<NSDatabase.IResult>{
           requestId,
-          resultId: generateId(),
+          resultId: createResultId(),
           connId: this.getId(),
           cols: results && results.length ? Object.keys(results[0]) : [],
           messages,
@@ -260,7 +358,7 @@ export default class DuckDB extends AbstractDriver<TDuckDBConnection, any> imple
         resultsAgg.push(<NSDatabase.IResult>{
           connId: this.getId(),
           requestId,
-          resultId: generateId(),
+          resultId: createResultId(),
           cols: [],
           messages: [this.prepareMessage(error?.message || error)],
           error: true,
